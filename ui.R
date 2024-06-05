@@ -1,29 +1,38 @@
 library(shiny)
 library(ggplot2)
+library(shinythemes)
+source("Bookworm_Brigade.R")
 
-dataset <- diamonds
 
 fluidPage(
   
-  titlePanel("Diamonds Explorer"),
-  
+  titlePanel("Bookworm Brigade 2024 Reading Challenge"),
+  theme = shinytheme("paper"),
   sidebarPanel(
-    
-    sliderInput('sampleSize', 'Sample Size', min=1, max=nrow(dataset),
-                value=min(1000, nrow(dataset)), step=500, round=0),
-    
-    selectInput('x', 'X', names(dataset)),
-    selectInput('y', 'Y', names(dataset), names(dataset)[[2]]),
-    selectInput('color', 'Color', c('None', names(dataset))),
-    
-    checkboxInput('jitter', 'Jitter'),
-    checkboxInput('smooth', 'Smooth'),
-    
-    selectInput('facet_row', 'Facet Row', c(None='.', names(dataset))),
-    selectInput('facet_col', 'Facet Column', c(None='.', names(dataset)))
+  #could change these drop downs to select the person's books or other info
+   #  selectInput('bailey', 'Bailey', range(1:10)),
+   #  selectInput('cal', 'Cal', range(1:10)),
+   # selectInput('dustin', 'Dustin', range(1:10)),
+   # selectInput('emy', 'Emy', range(1:10)),
+   # selectInput('katherine', 'Katherine', range(1:10)),
+   # 
+
+  checkboxGroupInput(
+    "checkGroup",
+    "Select readers:",
+    choices = standings_df$name,
+    selected = c("Emy", "Bookworms")
+  )
+  
   ),
   
   mainPanel(
-    plotOutput('plot')
+    
+    fluidRow(
+      verticalLayout(
+        splitLayout(cellWidths = c("50%", "50%"), plotOutput('team_standing_totals'),plotOutput('team_standing_perc'))
+        ,
+        splitLayout(cellWidths = c("50%", "50%"), tableOutput('individuals_table'), plotOutput('individual_progress')))
+      )
   )
 )

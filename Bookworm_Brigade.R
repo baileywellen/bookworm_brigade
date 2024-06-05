@@ -57,7 +57,16 @@ extract_info_perperson <- function(progress_str)
 }
 
 #function to pull reading details for Emy, Cal, Bailey, Dustin, and Katherine
-pull_reading_details <- function()
+pull_emy_details <- function()
+{
+  emy_url <- "https://www.goodreads.com/user_challenges/48496449"
+  emy_progress <- scrape_html(emy_url)
+  emy_info <- extract_info_perperson(emy_progress)
+  
+  return(emy_info)
+}
+
+pull_bookworm_details <- function()
 {
   #the URL should direct specifically to the persons's reading challenge
   bailey_url <- "https://www.goodreads.com/user_challenges/50469490"
@@ -76,13 +85,46 @@ pull_reading_details <- function()
   katherine_progress <- scrape_html(katherine_url)
   katherine_info <- extract_info_perperson(katherine_progress)
   
-  emy_url <- "https://www.goodreads.com/user_challenges/48496449"
-  emy_progress <- scrape_html(emy_url)
-  emy_info <- extract_info_perperson(emy_progress)
+  output <- list("bailey" = bailey_info, 
+                 "dustin" = dustin_info,
+                 "katherine" = katherine_info,
+                 "cal" = cal_info,
+                 sum_completed = bailey_info$completed + dustin_info$completed + katherine_info$completed + cal_info$completed,
+                 sum_goal = bailey_info$goal + dustin_info$goal + katherine_info$goal + cal_info$goal)
+  
+  return(output)
 }
 
-
-
+create_standings_df <- function()
+{
+  emy_info <- pull_emy_details()
+  bookworm_info <- pull_bookworm_details()
+  
+  
+  standings_df <- data.frame(name = c("Emy", "Cal", "Katherine", "Bailey", "Dustin", "Bookworms"), 
+                             books_read = c(emy_info$completed, bookworm_info$cal$completed, bookworm_info$katherine$completed,
+                                            bookworm_info$bailey$completed, bookworm_info$dustin$completed, bookworm_info$sum_completed),
+                             goal = c(emy_info$goal,bookworm_info$cal$goal, bookworm_info$katherine$goal,
+                                      bookworm_info$bailey$goal, bookworm_info$dustin$goal, bookworm_info$sum_goal))
+  
+  #add percentages columns to the dataframe
+  #standings_df$percent_complete <- standings_df$completed / standings_df$goal #* 100
+  standings_df <- standings_df %>% 
+    mutate(percent_complete = books_read / goal * 100)
+  
+  return(standings_df)
+}
 
 #now we need to create the R Shiny App
+
+
+standings_df <- create_standings_df()
+
+#pie chart 
+standings_df %>%
+  filter(name != "Bookworms") %>%
+ggplot(aes(x="", y=books_read, fill=name)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0) +
+  ggtitle("Individuals' book totals")
 

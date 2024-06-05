@@ -1,30 +1,58 @@
 library(shiny)
 library(ggplot2)
+source("Bookworm_Brigade.R")
 
 function(input, output) {
   
-  dataset <- reactive({
-    diamonds[sample(nrow(diamonds), input$sampleSize),]
+  standings_df <-create_standings_df()
+  
+  filtered_df <- reactive({
+    req(input$checkGroup)
+    standings_df %>% filter(name %in% input$checkGroup)
+  })
+
+  people_colors <- c("Bailey" = 'turquoise4', "Cal" = "orange", "Emy" = "purple", "Dustin" = "green", "Katherine" = "pink", "Bookworms" = "black")
+  #bar chart of totals
+  output$team_standing_totals <- renderPlot({
+      team_standings_plot <- filtered_df() %>% 
+        ggplot(aes(x=reorder(name, -books_read), y = books_read, fill = name)) +
+      geom_bar(stat = "identity") + 
+        xlab("Reader") + 
+        ylab("Number of Books Completed (#)") + 
+        ggtitle("Standings as Totals") + 
+        scale_fill_manual(values = people_colors)
+      
+      print(team_standings_plot)
   })
   
-  output$plot <- renderPlot({
+  #bar chart of percent of goal
+  output$team_standing_perc <- renderPlot({
+    team_standings_perc <- filtered_df() %>% 
+      ggplot(aes(x=reorder(name, -percent_complete), y = percent_complete, fill = name)) +
+      geom_bar(stat = "identity") + 
+      xlab("Reader") + 
+      ylab("Percent of Goal Complete (%)") + 
+      ggtitle("Standings as Percentage of Goal") + 
+      scale_fill_manual(values = people_colors)
     
-    p <- ggplot(dataset(), aes_string(x=input$x, y=input$y)) + geom_point()
+    print(team_standings_perc)
+  })
+  
+  #pie chart of individuals' progress
+  output$individual_progress <- renderPlot({
+    individual_standings_plot <- filtered_df() %>%
+      ggplot(aes(x="", y=books_read, fill=name)) +
+      geom_bar(stat="identity", width=1) +
+      coord_polar("y", start=0) +
+      ggtitle("Book Totals") + 
+      scale_fill_manual(values = people_colors)
     
-    if (input$color != 'None')
-      p <- p + aes_string(color=input$color)
-    
-    facets <- paste(input$facet_row, '~', input$facet_col)
-    if (facets != '. ~ .')
-      p <- p + facet_grid(facets)
-    
-    if (input$jitter)
-      p <- p + geom_jitter()
-    if (input$smooth)
-      p <- p + geom_smooth()
-    
-    print(p)
-    
-  }, height=700)
+    print(individual_standings_plot)
+  })
+  
+  output$individuals_table <- renderTable({
+    output_table <- filtered_df() %>%
+      arrange(desc(books_read))
+  })
   
 }

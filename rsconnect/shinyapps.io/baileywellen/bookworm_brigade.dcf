@@ -1,0 +1,12 @@
+name: bookworm_brigade
+title: bookworm_brigade
+username: baileywellen
+account: baileywellen
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 12133948
+bundleId: 8706455
+url: https://baileywellen.shinyapps.io/bookworm_brigade/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
