@@ -50,6 +50,20 @@ function(input, output) {
     print(individual_standings_plot)
   })
   
+  output$individual_piechart <- renderPlot({
+    individual_piechart <- filtered_df() %>%
+      pivot_longer(cols = c(percent_complete, percent_remaining), names_to = "category") %>%
+      ggplot(aes(x = "", y = value, fill = category)) +
+      geom_bar(width = 1, stat = "identity") +
+      coord_polar(theta = "y") +
+      facet_wrap(~ name, ncol = 3) +
+      ggtitle("Progress Towards Goal") +
+      theme_void() +
+      scale_fill_manual(values = c("percent_complete" = "darkgreen", "percent_remaining" = "darkred"))
+    
+    print(individual_piechart)
+  })
+  
   output$individuals_table <- renderTable({
     output_table <- filtered_df() %>%
       arrange(desc(books_read))

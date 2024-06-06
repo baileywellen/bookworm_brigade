@@ -1,5 +1,6 @@
 library(rvest)
 library(dplyr)
+library(tidyr)
 library(stringr)
 library(rsconnect)
 
@@ -110,7 +111,9 @@ create_standings_df <- function()
   #add percentages columns to the dataframe
   #standings_df$percent_complete <- standings_df$completed / standings_df$goal #* 100
   standings_df <- standings_df %>% 
-    mutate(percent_complete = books_read / goal * 100)
+    mutate(percent_complete = books_read / goal * 100,
+           remaining = goal - books_read,
+           percent_remaining = remaining / goal * 100 )
   
   return(standings_df)
 }
@@ -120,11 +123,18 @@ create_standings_df <- function()
 
 standings_df <- create_standings_df()
 
-#pie chart 
-standings_df %>%
-  filter(name != "Bookworms") %>%
-ggplot(aes(x="", y=books_read, fill=name)) +
-  geom_bar(stat="identity", width=1) +
-  coord_polar("y", start=0) +
-  ggtitle("Individuals' book totals")
 
+
+#create a pie chart for each individual
+standings_long <- standings_df %>%
+  pivot_longer(cols = c(percent_complete, percent_remaining), names_to = "category") %>%
+  
+  ggplot(aes(x = "", y = value, fill = category)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar(theta = "y") +
+  facet_wrap(~ name, ncol = 3) +
+  ggtitle("Progress Towards Goal") +
+  theme_void() +
+  scale_fill_manual(values = c("percent_complete" = "darkgreen", "percent_remaining" = "darkred"))
+  
+  

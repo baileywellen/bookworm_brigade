@@ -30,9 +30,10 @@ fluidPage(
     
     fluidRow(
       verticalLayout(
-        splitLayout(cellWidths = c("50%", "50%"), plotOutput('team_standing_totals'),plotOutput('team_standing_perc'))
+        splitLayout(cellWidths = c("50%", "50%"), plotOutput('team_standing_totals'),tableOutput('individuals_table'))
         ,
-        splitLayout(cellWidths = c("50%", "50%"), tableOutput('individuals_table'), plotOutput('individual_progress')))
+        plotOutput('individual_piechart')
       )
+    )
   )
 )
